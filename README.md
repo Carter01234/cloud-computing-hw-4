@@ -74,3 +74,21 @@ Stopping my server when I am done with it since I don't want to spend a lot:
 gcloud compute instances stop my-vm --zone=us-central1-a
 ```
 
+# Starting up a new VM running my HTTP Client 
+
+```
+gcloud compute instances create client-vm \
+    --zone=us-central1-a \
+    --machine-type=e2-micro \
+    --image-family=ubuntu-2404-lts-amd64 \
+    --image-project=ubuntu-os-cloud \
+    --no-service-account --no-scopes
+
+gcloud compute scp linux-http-client client-vm:~ --zone=us-central1-a
+gcloud compute ssh client-vm --zone=us-central1-a
+chmod +x linux-http-client
+
+./linux-http-client --domain 10.128.0.4 --port 8080 --num_requests 10 -i 9999 --bucket none --webdir none --verbose
+
+gcloud compute instances delete client-vm --zone=us-central1-a --quiet
+```
