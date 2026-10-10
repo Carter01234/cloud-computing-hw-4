@@ -11,7 +11,9 @@ Calling my code locally
 
 ```
 curl -i http://localhost:8080/<a-real-file>.html
+
 curl -i http://localhost:8080/does-not-exist.html
+
 curl -i -X POST http://localhost:8080/ \
     -H "Content-Type: application/json" \
     -d '{"filename": "399.html"}'
@@ -32,9 +34,16 @@ Calling my server on the VM.
 
 ```
 curl -i http://136.64.134.90:8080/5000.html
+
 curl -i -X POST http://136.64.134.90:8080 \
   -H "Content-Type: application/json" \
   -d '{"filename": "1164.html"}'
+
+curl -i -X PUT http://136.64.134.90:8080 \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "1164.html"}'
+
+./http-client --domain 136.64.134.90 --port 8080 --num_requests 10 -i 9999 --bucket none --webdir none --verbose
 ```
 
 SSH into my server in google cloud
