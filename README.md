@@ -30,7 +30,9 @@ SSH into my server in google cloud
 gcloud compute ssh my-vm --zone=us-central1-a
 ```
 
-Updating the boot script and metadata needed for boot script.
+Puts the startup script and the python server into google clouds metadata.
+startup script is called on startup, file server is called by the startup script.
+
 ```
 gcloud compute instances add-metadata my-vm \
     --zone=us-central1-a \

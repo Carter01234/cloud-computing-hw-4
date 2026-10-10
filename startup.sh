@@ -8,6 +8,7 @@ mkdir -p "$APP_DIR"
  
 # One-time setup: create a virtual environment with google-cloud-storage.
 # Skipped on later boots because the venv already exists.
+# -x means "is there an executable at this location?"
 if [ ! -x "$VENV_DIR/bin/python" ]; then
   apt-get update
   apt-get install -y python3-venv
