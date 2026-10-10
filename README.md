@@ -5,10 +5,16 @@ Running the server locally
 
 ```
 python file-server/file-server.py
+```
 
 Calling my code locally 
+
+```
 curl -i http://localhost:8080/<a-real-file>.html
 curl -i http://localhost:8080/does-not-exist.html
+curl -i -X POST http://localhost:8080/ \
+    -H "Content-Type: application/json" \
+    -d '{"filename": "399.html"}'
 ```
 
 Creating my VM with my service account. 
@@ -26,6 +32,9 @@ Calling my server on the VM.
 
 ```
 curl -i http://136.64.134.90:8080/5000.html
+curl -i -X POST http://136.64.134.90:8080 \
+  -H "Content-Type: application/json" \
+  -d '{"filename": "1164.html"}'
 ```
 
 SSH into my server in google cloud

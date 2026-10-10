@@ -22,22 +22,6 @@ PREFIX = "pages"
 HOST = "0.0.0.0"  # listen on all interfaces so the VM is reachable from outside
 PORT = 8080
 
-
-def get_file_from_bucket(filename: str) -> None | bytes: 
-    blob = storage_client.bucket(BUCKET_NAME).blob(f'{PREFIX}/{filename}')
-    try:
-        return blob.download_as_bytes()
-    except NotFound:
-        print(f"The filename {filename} does not exist in GCS")
-
-        logging.warning(
-            f"File not found: {filename}",
-            extra={"json_fields": {"status": 404, "filename": filename}},
-        )
-
-        return None
- 
- 
 class RequestHandler(BaseHTTPRequestHandler):
     """Handles incoming HTTP requests. Add a do_<METHOD> method per verb you support."""
  
@@ -52,17 +36,38 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         filename = unquote(urlsplit(self.path).path).lstrip("/")
         contents = get_file_from_bucket(filename)
-        if contents is None:
-            self._send(404, f"File not found: {filename}\n") 
-        else: 
-            content_type = mimetypes.guess_type(filename)[0] or "text/plain"
-            self._send(200, contents, content_type)
+        send_response(self, filename, contents)
+
  
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(length).decode("utf-8")
-        self._send(200, json.dumps({"received": body}), "application/json")
- 
+        data = json.loads(self.rfile.read(length))
+        filename = data.get("filename")
+        contents = get_file_from_bucket(filename)
+        send_response(self, filename, contents)
+    
+
+def get_file_from_bucket(filename: str) -> None | bytes: 
+    blob = storage_client.bucket(BUCKET_NAME).blob(f'{PREFIX}/{filename}')
+    try:
+        return blob.download_as_bytes()
+    except NotFound:
+        print(f"The filename {filename} does not exist in GCS")
+
+        logging.warning(
+            f"File not found: {filename}",
+            extra={"json_fields": {"status": 404, "filename": filename}},
+        )
+
+        return None
+
+
+def send_response(requestHandler: RequestHandler, filename, contents):
+    if contents is None:
+        requestHandler._send(404, f"File not found: {filename}\n") 
+    else: 
+        content_type = mimetypes.guess_type(filename)[0] or "text/plain"
+        requestHandler._send(200, contents, content_type)
  
 def main():
     server = ThreadingHTTPServer((HOST, PORT), RequestHandler)
