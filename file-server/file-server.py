@@ -45,6 +45,21 @@ class RequestHandler(BaseHTTPRequestHandler):
         filename = data.get("filename")
         contents = get_file_from_bucket(filename)
         send_response(self, filename, contents)
+
+
+    def __getattr__(self, name):
+        # Only called when normal attribute lookup fails, so do_GET and do_POST
+        # are found as usual. Any other do_<METHOD> lands here.
+        if name.startswith("do_"):
+            return self._method_not_implemented
+        raise AttributeError(name)
+
+    def _method_not_implemented(self):
+        logging.error(
+            f"Unsupported HTTP method: {self.command} {self.path}",
+            extra={"json_fields": {"status": 501, "method": self.command, "path": self.path}},
+        )
+        self._send(501, f"Method {self.command} not implemented\n", "text/plain; charset=utf-8")
     
 
 def get_file_from_bucket(filename: str) -> None | bytes: 
