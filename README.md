@@ -30,3 +30,23 @@ SSH into my server in google cloud
 gcloud compute ssh my-vm --zone=us-central1-a
 ```
 
+Updating the boot script and metadata needed for boot script.
+```
+gcloud compute instances add-metadata my-vm \
+    --zone=us-central1-a \
+    --metadata-from-file=startup-script=startup.sh,file-server-py=file-server/file-server.py
+```
+
+
+Resetting my VM when I need to re-run the startup script
+
+```
+gcloud compute instances reset my-vm --zone=us-central1-a
+```
+
+Stopping my server when I am done with it since I don't want to spend a lot: 
+
+```
+gcloud compute instances stop my-vm --zone=us-central1-a
+```
+
