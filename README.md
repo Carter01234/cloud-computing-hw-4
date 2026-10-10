@@ -4,7 +4,11 @@
 Running the server locally 
 
 ```
-python3 server.py
+python file-server/file-server.py
+
+Calling my code locally 
+curl -i http://localhost:8080/<a-real-file>.html
+curl -i http://localhost:8080/does-not-exist.html
 ```
 
 Creating my VM with my service account. 
@@ -21,7 +25,7 @@ gcloud compute instances create my-vm \
 Calling my server on the VM.
 
 ```
-curl http://136.64.134.90:8080
+curl -i http://136.64.134.90:8080/5000.html
 ```
 
 SSH into my server in google cloud
