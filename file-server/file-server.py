@@ -67,7 +67,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 "client_ip": self.client_address[0],
             }
                     
-            logging.error(
+            logging.critical(
                 f"Access denied: request from forbidden country '{country}' for {filename}",
                 extra={"json_fields": event}
             )
@@ -97,7 +97,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 "client_ip": self.client_address[0],
             }
                     
-            logging.error(
+            logging.critical(
                 f"Access denied: request from forbidden country '{country}' for {filename}",
                 extra={"json_fields": event}
             )
