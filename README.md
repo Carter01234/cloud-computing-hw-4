@@ -47,6 +47,11 @@ curl -i -X PUT http://136.64.134.90:8080 \
   -H "Content-Type: application/json" \
   -d '{"filename": "1164.html"}'
 
+curl -i -X POST http://136.64.134.90:8080 \
+  -H "Content-Type: application/json" \
+  -H "X-country: Syria" \
+  -d '{"filename": "1164.html"}'
+
 ./http-client --domain 136.64.134.90 --port 8080 --num_requests 10 -i 9999 --bucket none --webdir none --verbose
 
 http://136.64.134.90:8080/8291.html

@@ -6,15 +6,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit, unquote
 from google.cloud import logging as cloud_logging
 from google.api_core.exceptions import NotFound
+from google.cloud import pubsub_v1
 from google.cloud import storage
 import mimetypes
 import logging
 
-# setting up logging to work with google cloud
-client = cloud_logging.Client()
-client.setup_logging()
 
-storage_client = storage.Client()
+PROJECT_ID = "project-8aeecca0-4f70-4c6b-8e3"
+FORBIDDEN_TOPIC = "forbidden-requests"
 
 
 BUCKET_NAME = "html-files-for-class"
@@ -34,6 +33,15 @@ FORBIDDEN_COUNTRIES = {
     "syria",
 }
 
+# setting up logging to work with google cloud
+client = cloud_logging.Client()
+client.setup_logging()
+
+storage_client = storage.Client()
+
+publisher = pubsub_v1.PublisherClient()
+forbidden_topic_path = publisher.topic_path(PROJECT_ID, FORBIDDEN_TOPIC)
+
 class RequestHandler(BaseHTTPRequestHandler):
     """Handles incoming HTTP requests. Add a do_<METHOD> method per verb you support."""
  
@@ -50,16 +58,21 @@ class RequestHandler(BaseHTTPRequestHandler):
         country = self.headers.get("X-country")
 
         if is_forbidden_country(country):
+
+            event = {
+                "status": 403,
+                "country": country,
+                "filename": filename,
+                "method": self.command,
+                "client_ip": self.client_address[0],
+            }
+                    
             logging.error(
                 f"Access denied: request from forbidden country '{country}' for {filename}",
-                extra={"json_fields": {
-                    "status": 403,
-                    "country": country,
-                    "filename": filename,
-                    "method": self.command,
-                    "client_ip": self.client_address[0],
-                }}
+                extra={"json_fields": event}
             )
+
+            publisher.publish(forbidden_topic_path, json.dumps(event).encode("utf-8"))
 
             self._send(403, "Access denied\n", "text/plain; charset=utf-8")
 
@@ -75,16 +88,21 @@ class RequestHandler(BaseHTTPRequestHandler):
         filename = data.get("filename")
 
         if is_forbidden_country(country):
+
+            event = {
+                "status": 403,
+                "country": country,
+                "filename": filename,
+                "method": self.command,
+                "client_ip": self.client_address[0],
+            }
+                    
             logging.error(
                 f"Access denied: request from forbidden country '{country}' for {filename}",
-                extra={"json_fields": {
-                    "status": 403,
-                    "country": country,
-                    "filename": filename,
-                    "method": self.command,
-                    "client_ip": self.client_address[0],
-                }}
+                extra={"json_fields": event}
             )
+
+            publisher.publish(forbidden_topic_path, json.dumps(event).encode("utf-8"))
 
             self._send(403, "Access denied\n", "text/plain; charset=utf-8")
 
