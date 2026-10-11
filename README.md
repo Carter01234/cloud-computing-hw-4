@@ -31,7 +31,7 @@ gcloud compute instances create my-vm \
     --address=homework4-ip \
     --service-account=web-server-sa@project-8aeecca0-4f70-4c6b-8e3.iam.gserviceaccount.com \
     --scopes=cloud-platform \
-    --metadata-from-file=startup-script=startup.sh,file-server-py=file-server/file-server.py
+    --metadata-from-file=startup-script=file-server/startup.sh,file-server-py=file-server/file-server.py
 ```
 
 Calling my server on the VM.
@@ -102,4 +102,24 @@ chmod +x linux-http-client
 ./linux-http-client --domain 10.128.0.4 --port 8080 --num_requests 10 -i 9999 --bucket none --webdir none --verbose
 
 gcloud compute instances delete client-vm --zone=us-central1-a --quiet
+```
+
+
+# Commands for the VM Running my Error Logging 
+
+```
+gcloud compute instances create error-logger-vm \
+    --zone=us-central1-a \
+    --machine-type=e2-micro \
+    --service-account=web-server-sa@project-8aeecca0-4f70-4c6b-8e3.iam.gserviceaccount.com \
+    --scopes=cloud-platform \
+    --metadata-from-file=startup-script=error-logger-startup.sh,error-logger-py=error-logger/error-logger.py
+
+
+gcloud compute instances add-metadata error-logger-vm \
+    --zone=us-central1-a \
+    --metadata-from-file=startup-script=error-logger-startup.sh,error-logger-py=error-logger/error-logger.py
+
+
+gcloud compute instances reset error-logger-vm --zone=us-central1-a
 ```
