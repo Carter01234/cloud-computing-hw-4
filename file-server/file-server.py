@@ -22,6 +22,18 @@ PREFIX = "pages"
 HOST = "0.0.0.0"  # listen on all interfaces so the VM is reachable from outside
 PORT = 8080
 
+FORBIDDEN_COUNTRIES = {
+    "north korea",
+    "iran",
+    "cuba",
+    "myanmar",
+    "iraq",
+    "libya",
+    "sudan",
+    "zimbabwe",
+    "syria",
+}
+
 class RequestHandler(BaseHTTPRequestHandler):
     """Handles incoming HTTP requests. Add a do_<METHOD> method per verb you support."""
  
@@ -35,16 +47,50 @@ class RequestHandler(BaseHTTPRequestHandler):
  
     def do_GET(self):
         filename = unquote(urlsplit(self.path).path).lstrip("/")
-        contents = get_file_from_bucket(filename)
-        send_response(self, filename, contents)
+        country = self.headers.get("X-country")
+
+        if is_forbidden_country(country):
+            logging.error(
+                f"Access denied: request from forbidden country '{country}' for {filename}",
+                extra={"json_fields": {
+                    "status": 403,
+                    "country": country,
+                    "filename": filename,
+                    "method": self.command,
+                    "client_ip": self.client_address[0],
+                }}
+            )
+
+            self._send(403, "Access denied\n", "text/plain; charset=utf-8")
+
+        else: 
+            contents = get_file_from_bucket(filename)
+            send_response(self, filename, contents)
 
  
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0))
+        country = self.headers.get("X-country")
         data = json.loads(self.rfile.read(length))
         filename = data.get("filename")
-        contents = get_file_from_bucket(filename)
-        send_response(self, filename, contents)
+
+        if is_forbidden_country(country):
+            logging.error(
+                f"Access denied: request from forbidden country '{country}' for {filename}",
+                extra={"json_fields": {
+                    "status": 403,
+                    "country": country,
+                    "filename": filename,
+                    "method": self.command,
+                    "client_ip": self.client_address[0],
+                }}
+            )
+
+            self._send(403, "Access denied\n", "text/plain; charset=utf-8")
+
+        else: 
+            contents = get_file_from_bucket(filename)
+            send_response(self, filename, contents)
 
 
     def __getattr__(self, name):
@@ -60,7 +106,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             extra={"json_fields": {"status": 501, "method": self.command, "path": self.path}},
         )
         self._send(501, f"Method {self.command} not implemented\n", "text/plain; charset=utf-8")
-    
+
+def is_forbidden_country(country: str | None) -> bool:
+    return country is not None and country.strip().lower() in FORBIDDEN_COUNTRIES
 
 def get_file_from_bucket(filename: str) -> None | bytes: 
     blob = storage_client.bucket(BUCKET_NAME).blob(f'{PREFIX}/{filename}')

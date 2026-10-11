@@ -17,6 +17,10 @@ curl -i http://localhost:8080/does-not-exist.html
 curl -i -X POST http://localhost:8080/ \
     -H "Content-Type: application/json" \
     -d '{"filename": "399.html"}'
+
+curl -X POST -H "X-country: Iran" -H "Content-Type: application/json" -d '{"filename": "3000.html"}' http://localhost:8080/300.html
+
+curl -i -H "X-country: Iran" http://localhost:8080/300.html
 ```
 
 Creating my VM with my service account. 
@@ -44,6 +48,8 @@ curl -i -X PUT http://136.64.134.90:8080 \
   -d '{"filename": "1164.html"}'
 
 ./http-client --domain 136.64.134.90 --port 8080 --num_requests 10 -i 9999 --bucket none --webdir none --verbose
+
+http://136.64.134.90:8080/8291.html
 ```
 
 SSH into my server in google cloud
